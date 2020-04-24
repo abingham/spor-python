@@ -1,0 +1,13 @@
+[package]
+name = "spor-python"
+version = "0.1.0"
+authors = ["Austin Bingham <austin.bingham@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "spor"
+crate-type = ["cdylib"]
+
+[dependencies.cpython]
+version = "0.5"
+features = ["extension-module"]

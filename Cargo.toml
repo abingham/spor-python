@@ -5,7 +5,7 @@ authors = ["Austin Bingham <austin.bingham@gmail.com>"]
 edition = "2018"
 
 [lib]
-name = "spor"
+name = "_spor"
 crate-type = ["cdylib"]
 
 [dependencies.cpython]

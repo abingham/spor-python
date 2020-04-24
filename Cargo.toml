@@ -8,6 +8,9 @@ edition = "2018"
 name = "spor"
 crate-type = ["cdylib"]
 
+[dependencies.spor]
+path = "../spor"
+
 [dependencies.cpython]
 version = "0.5"
 features = ["extension-module"]

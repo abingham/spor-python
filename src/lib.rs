@@ -1,23 +1,17 @@
 use cpython::{PyResult, Python, py_module_initializer, py_fn};
+use spor::alignment::smith_waterman::{SimpleScorer, SmithWaterman};
+use spor::alignment::align::Aligner;
 
-// add bindings to the generated python module
-// N.B: names: "rust2py" must be the name of the `.so` or `.pyd` file
+fn align(_: Python, a: &str, b: &str) -> PyResult<f32> {
+    let scorer = SimpleScorer::default();
+    let aligner = SmithWaterman::new(scorer);
+    let (score, _) = aligner.align(a, b);
+    Ok(score)
+}
+
 py_module_initializer!(spor, |py, m| {
-    m.add(py, "__doc__", "This module is implemented in Rust.")?;
-    m.add(py, "sum_as_string", py_fn!(py, sum_as_string_py(a: i64, b:i64)))?;
+    m.add(py, "__doc__", "Anchored metadata.")?;
+    m.add(py, "align", py_fn!(py, align(a: &str, b: &str)))?;
     Ok(())
 });
 
-// logic implemented as a normal rust function
-fn sum_as_string(a:i64, b:i64) -> String {
-    format!("{}", a + b).to_string()
-}
-
-// rust-cpython aware function. All of our python interface could be
-// declared in a separate module.
-// Note that the py_fn!() macro automatically converts the arguments from
-// Python objects to Rust values; and the Rust return value back into a Python object.
-fn sum_as_string_py(_: Python, a:i64, b:i64) -> PyResult<String> {
-    let out = sum_as_string(a, b);
-    Ok(out)
-}

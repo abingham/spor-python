@@ -5,9 +5,15 @@ authors = ["Austin Bingham <austin.bingham@gmail.com>"]
 edition = "2018"
 
 [lib]
-name = "_spor"
+name = "spor"
 crate-type = ["cdylib"]
 
 [dependencies.cpython]
 version = "0.5"
 features = ["extension-module"]
+
+[package.metadata.maturin]
+classifier = ["Programming Language :: Python"]
+maintainer = "Austin Bingham"
+maintainer-email = "austin.bingham@gmail.com"
+project-url = ["https://github.com/abingham/spor-python"]

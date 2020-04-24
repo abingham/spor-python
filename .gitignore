@@ -1,2 +1,5 @@
 /target
 .DS_Store
+__pycache__
+/spor/*so
+.vscode

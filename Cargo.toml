@@ -9,6 +9,7 @@ name = "spor"
 crate-type = ["cdylib"]
 
 [dependencies]
+futures = "0.3.4"
 serde_yaml = "0.8.11"
 
 [dependencies.spor]

@@ -42,7 +42,7 @@ py_class!(class Context |py| {
     data context: spor::anchor::Context;
 });
 
-py_class!(class Anchor |py| {
+py_class!(pub class Anchor |py| {
     def __new__(_cls,
         file_path: String,
         context: Context,

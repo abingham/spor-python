@@ -2,7 +2,7 @@ use cpython::{py_fn, py_module_initializer, PyResult, Python};
 use spor::alignment::align::Aligner;
 use spor::alignment::smith_waterman::{SimpleScorer, SmithWaterman};
 
-mod anchor;
+pub mod anchor;
 mod fs_repository;
 
 fn align(_: Python, a: &str, b: &str) -> PyResult<f32> {

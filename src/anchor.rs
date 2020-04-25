@@ -1,6 +1,9 @@
 use cpython::ObjectProtocol;
 use cpython::{py_class, PyDict, PyErr, PyModule, PyResult, Python};
 
+// TODO: Can we properly model the ownership relationship between Anchor and Context? Right now we just copy contexts
+// when we need them from the anchor.
+
 py_class!(class Context |py| {
     def __new__(_cls, text: &str, offset: usize, width: usize, context_width: usize) -> PyResult<Context> {
         spor::anchor::Context::new(text, offset, width, context_width)
@@ -56,11 +59,7 @@ py_class!(class Anchor |py| {
                     .or_else(|err|
                         Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err)))))?;
 
-        let c = context.context(py);
-        let context = spor::anchor::Context::new(&c.full_text(), c.offset(), c.topic().len(), c.width())
-            .or_else(|err| {
-                Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err)))
-            })?;
+        let context = context.context(py).clone();
 
         spor::anchor::Anchor::new(file_path, context, metadata, encoding)
             .or_else(|err| {
@@ -74,7 +73,7 @@ py_class!(class Anchor |py| {
     def file_path(&self) -> PyResult<String> {
         let p = self.anchor(py).file_path();
         p.to_str()
-            .ok_or(PyErr::new::<cpython::exc::ValueError, _>(py, 
+            .ok_or(PyErr::new::<cpython::exc::ValueError, _>(py,
                 "Unable to convert path to string"))
             .map(|s| s.to_owned())
     }
@@ -83,21 +82,21 @@ py_class!(class Anchor |py| {
         Ok(self.anchor(py).encoding().clone())
     }
 
-    // pub fn context(&self) -> &Context {
-    //     return &self.context;
-    // }
+    def context(&self) -> PyResult<Context> {
+        Context::create_instance(py, self.anchor(py).context().clone())
+    }
 
     def metadata(&self) -> PyResult<PyDict> {
         let metadata = self.anchor(py).metadata();
 
         let metadata_string = serde_yaml::to_string(metadata)
-            .or_else(|err| 
+            .or_else(|err|
                 Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err))))?;
 
         PyModule::import(py, "yaml")
             .and_then(|yaml| yaml.get(py, "safe_load"))
             .and_then(|load| load.call(py, (metadata_string,), None))
-            .and_then(|dict| 
+            .and_then(|dict|
                 dict.cast_into::<PyDict>(py)
                     .or_else(|err| Err(PyErr::from(err))))
     }

@@ -52,10 +52,9 @@ py_class!(class Anchor |py| {
             .and_then(|dump| dump.call(py, (metadata,), None))
             .and_then(|string| string.extract::<String>(py))
             .and_then(|string|
-                serde_yaml::from_str::<serde_yaml::Value>(&string).or_else(|err| {
-                    Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err)))
-                })
-            )?;
+                serde_yaml::from_str::<serde_yaml::Value>(&string)
+                    .or_else(|err|
+                        Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err)))))?;
 
         let c = context.context(py);
         let context = spor::anchor::Context::new(&c.full_text(), c.offset(), c.topic().len(), c.width())
@@ -72,13 +71,17 @@ py_class!(class Anchor |py| {
             })
     }
 
-    // pub fn file_path(&self) -> &PathBuf {
-    //     return &self.file_path;
-    // }
+    def file_path(&self) -> PyResult<String> {
+        let p = self.anchor(py).file_path();
+        p.to_str()
+            .ok_or(PyErr::new::<cpython::exc::ValueError, _>(py, 
+                "Unable to convert path to string"))
+            .map(|s| s.to_owned())
+    }
 
-    // pub fn encoding(&self) -> &String {
-    //     return &self.encoding;
-    // }
+    def encoding(&self) -> PyResult<String> {
+        Ok(self.anchor(py).encoding().clone())
+    }
 
     // pub fn context(&self) -> &Context {
     //     return &self.context;

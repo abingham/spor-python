@@ -8,6 +8,9 @@ edition = "2018"
 name = "spor"
 crate-type = ["cdylib"]
 
+[dependencies]
+serde_yaml = "0.8.11"
+
 [dependencies.spor]
 path = "../spor"
 

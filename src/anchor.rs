@@ -1,4 +1,5 @@
-use cpython::{py_class, PyErr, PyModule, PyResult, Python};
+use cpython::ObjectProtocol;
+use cpython::{py_class, PyDict, PyErr, PyModule, PyResult, Python};
 
 py_class!(class Context |py| {
     def __new__(_cls, text: &str, offset: usize, width: usize, context_width: usize) -> PyResult<Context> {
@@ -38,9 +39,62 @@ py_class!(class Context |py| {
     data context: spor::anchor::Context;
 });
 
+py_class!(class Anchor |py| {
+    def __new__(_cls,
+        file_path: String,
+        context: Context,
+        metadata: PyDict,
+        encoding: String
+    ) -> PyResult<Anchor> {
+        let file_path = std::path::Path::new(&file_path);
+        let metadata = PyModule::import(py, "yaml")
+            .and_then(|yaml| yaml.get(py, "dump"))
+            .and_then(|dump| dump.call(py, (metadata,), None))
+            .and_then(|string| string.extract::<String>(py))
+            .and_then(|string|
+                serde_yaml::from_str::<serde_yaml::Value>(&string).or_else(|err| {
+                    Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err)))
+                })
+            )?;
+
+        let c = context.context(py);
+        let context = spor::anchor::Context::new(&c.full_text(), c.offset(), c.topic().len(), c.width())
+            .or_else(|err| {
+                Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err)))
+            })?;
+
+        spor::anchor::Anchor::new(file_path, context, metadata, encoding)
+            .or_else(|err| {
+                Err(PyErr::new::<cpython::exc::OSError, _>(py, format!("{}", err)))
+            })
+            .and_then(|anchor| {
+                Anchor::create_instance(py, anchor)
+            })
+    }
+
+    // pub fn file_path(&self) -> &PathBuf {
+    //     return &self.file_path;
+    // }
+
+    // pub fn encoding(&self) -> &String {
+    //     return &self.encoding;
+    // }
+
+    // pub fn context(&self) -> &Context {
+    //     return &self.context;
+    // }
+
+    // pub fn metadata(&self) -> &serde_yaml::Value {
+    //     return &self.metadata;
+    // }
+
+    data anchor: spor::anchor::Anchor;
+});
+
 pub fn init_module(py: Python) -> PyResult<PyModule> {
     let m = PyModule::new(py, "anchor")?;
     m.add(py, "__doc__", "Anchor implementation")?;
+    // m.add_class::<Anchor>(py)?;
     m.add_class::<Context>(py)?;
     Ok(m)
 }

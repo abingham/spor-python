@@ -87,9 +87,20 @@ py_class!(class Anchor |py| {
     //     return &self.context;
     // }
 
-    // pub fn metadata(&self) -> &serde_yaml::Value {
-    //     return &self.metadata;
-    // }
+    def metadata(&self) -> PyResult<PyDict> {
+        let metadata = self.anchor(py).metadata();
+
+        let metadata_string = serde_yaml::to_string(metadata)
+            .or_else(|err| 
+                Err(PyErr::new::<cpython::exc::ValueError, _>(py, format!("{}", err))))?;
+
+        PyModule::import(py, "yaml")
+            .and_then(|yaml| yaml.get(py, "safe_load"))
+            .and_then(|load| load.call(py, (metadata_string,), None))
+            .and_then(|dict| 
+                dict.cast_into::<PyDict>(py)
+                    .or_else(|err| Err(PyErr::from(err))))
+    }
 
     data anchor: spor::anchor::Anchor;
 });
@@ -97,7 +108,7 @@ py_class!(class Anchor |py| {
 pub fn init_module(py: Python) -> PyResult<PyModule> {
     let m = PyModule::new(py, "anchor")?;
     m.add(py, "__doc__", "Anchor implementation")?;
-    // m.add_class::<Anchor>(py)?;
+    m.add_class::<Anchor>(py)?;
     m.add_class::<Context>(py)?;
     Ok(m)
 }

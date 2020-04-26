@@ -1,5 +1,7 @@
 
 use pyo3::prelude::*;
+use pyo3::PyIterProtocol;
+use pyo3::types::{PyString, PyTuple};
 use spor::repository::Repository;
 use crate::anchor::PyAnchor;
 use spor::repository::AnchorId;
@@ -56,8 +58,35 @@ impl PyFSRepository {
             .map_err(|err| pyo3::exceptions::RuntimeError::py_err(format!("{}", err)))
             .map(|opt| opt.map(|a| PyAnchor { handle: a }))
     }
+}
 
-    // TODO: iteration 
+#[pyclass]
+struct FSRepositoryIterator {
+    iter: Box<dyn Iterator<Item = (String, spor::anchor::Anchor)> + Send>,
+}
+
+#[pyproto]
+impl PyIterProtocol for FSRepositoryIterator {
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Py<FSRepositoryIterator>> {
+        Ok(slf.into())
+    }
+
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<PyObject>> {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+
+        let result = slf.iter.next()
+            .map(|(id, anchor)| {
+                let objects: Vec<PyObject> = vec![
+                    PyString::new(py, &id).to_object(py),
+                    PyAnchor { handle: anchor }.into_py(py)
+                 ];
+
+                PyTuple::new(py, objects).to_object(py)
+            });
+
+        Ok(result)
+    }
 }
 
 // TODO: initialize()

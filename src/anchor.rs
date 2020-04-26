@@ -4,7 +4,7 @@ use cpython::{py_class, PyDict, PyErr, PyModule, PyResult, Python};
 // TODO: Can we properly model the ownership relationship between Anchor and Context? Right now we just copy contexts
 // when we need them from the anchor.
 
-py_class!(class Context |py| {
+py_class!(pub class Context |py| {
     def __new__(_cls, text: &str, offset: usize, width: usize, context_width: usize) -> PyResult<Context> {
         spor::anchor::Context::new(text, offset, width, context_width)
             .or_else(|err| {

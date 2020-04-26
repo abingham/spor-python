@@ -1,5 +1,5 @@
 use cpython::ObjectProtocol;
-use cpython::{py_class, PyErr, PyInt, PyTuple, PyModule, PyObject, PyResult, Python, ToPyObject};
+use cpython::{py_class, PyErr, PyModule, PyObject, PyResult, Python};
 use spor::repository::Repository;
 use crate::anchor::Anchor;
 
@@ -25,20 +25,28 @@ py_class!(class FSRepository |py| {
             .and_then(|pathlib| pathlib.get(py, "Path"))
             .and_then(|ctor| ctor.call(py, (path,), None))
     }
-    // def iteration
-    
-    def add(&self, anchor: spor::anchor::Anchor) -> PyResult<spor::anchor::AnchorId> {
-        let f = self.repo(py).add(anchor);
-        futures::executor::block_on(f)
-            .or_else(|err| Err(PyErr::new::<cpython::exc::RuntimeError, _>(py, err)))
-    }
-    def update(&self, anchor_id: String, anchor: spor::anchor::Anchor) -> PyResult<()> {
-        let f = self.repo(py).update(anchor_id, &anchor);
-        futures::executor::block_on(f)
-            .or_else(|err| Err(PyErr::new::<cpython::exc::RuntimeError, _>(py, err)))
 
+    // def iteration
+
+    def add(&self, anchor: crate::anchor::Anchor) -> PyResult<spor::repository::AnchorId> {
+        let f = anchor.anchor(py);
+        // let f = self.repo(py).add(anchor);
+        // futures::executor::block_on(f)
+        //     .or_else(|err| Err(PyErr::new::<cpython::exc::RuntimeError, _>(py, err)))
+        Err(PyErr::new::<cpython::exc::RuntimeError, _>(py, "fnord"))
     }
-    // def get
+
+    // def update(&self, anchor_id: String, anchor: spor::anchor::Anchor) -> PyResult<()> {
+    //     let f = self.repo(py).update(anchor_id, &anchor);
+    //     futures::executor::block_on(f)
+    //         .or_else(|err| Err(PyErr::new::<cpython::exc::RuntimeError, _>(py, err)))
+    // }
+
+    // def get(&self, anchor_id: spor::repository::AnchorId) -> PyResult<Option<spor::anchor::Anchor>> {
+    //     let f = self.repo(py).get(&anchor_id);
+    //     futures::executor::block_on(f)
+    //         .or_else(|err| Err(PyErr::new::<cpython::exc::RuntimeError, _>(py, err)))
+    // }
 
     data repo: spor::repository::fs_repository::FSRepository;
 });

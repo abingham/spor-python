@@ -8,16 +8,16 @@ edition = "2018"
 name = "spor"
 crate-type = ["cdylib"]
 
+[dependencies.pyo3]
+version = "0.9.2"
+features = ["extension-module"]
+
 [dependencies]
 futures = "0.3.4"
 serde_yaml = "0.8.11"
 
 [dependencies.spor]
 path = "../spor"
-
-[dependencies.cpython]
-version = "0.5"
-features = ["extension-module"]
 
 [package.metadata.maturin]
 classifier = ["Programming Language :: Python"]

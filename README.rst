@@ -32,5 +32,5 @@ Note that you may need to specify a particular Python interpreter::
 Build issues?
 -------------
 
-We use `rust-cpython <https://github.com/dgrunwald/rust-cpython>`_ to generate the Python bindings, so read their docs
+We use `PyO3 <https://github.com/PyO3/PyO3>`_ to generate the Python bindings, so read their docs
 if you have any trouble building (particularly on macos).

@@ -51,7 +51,7 @@ impl PyContext {
 
 #[pyclass(name=Anchor, module="spor.anchor")]
 pub struct PyAnchor {
-    handle: spor::anchor::Anchor,
+    pub handle: spor::anchor::Anchor,
 }
 
 #[pymethods]

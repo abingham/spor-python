@@ -4,7 +4,7 @@ use spor::alignment::align::Aligner;
 use spor::alignment::smith_waterman::{SimpleScorer, SmithWaterman};
 
 pub mod anchor;
-// mod fs_repository;
+mod fs_repository;
 
 #[pyfunction]
 fn align(a: &str, b: &str) -> PyResult<f32> {
@@ -22,10 +22,17 @@ pub fn anchor(_py: Python, m: &PyModule) -> PyResult<()> {
     Ok(())
 }
 
+#[pymodule]
+pub fn fs_repository(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<crate::fs_repository::PyFSRepository>()?;
+    Ok(())
+}
+
 /// Top-level spor module
 #[pymodule]
 fn spor(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(align))?;
     m.add_wrapped(wrap_pymodule!(anchor))?;
+    m.add_wrapped(wrap_pymodule!(fs_repository))?;
     Ok(())
 }

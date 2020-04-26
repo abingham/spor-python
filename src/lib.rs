@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::{wrap_pymodule, wrap_pyfunction};
+use pyo3::{wrap_pyfunction, wrap_pymodule};
 use spor::alignment::align::Aligner;
 use spor::alignment::smith_waterman::{SimpleScorer, SmithWaterman};
 
@@ -14,17 +14,18 @@ fn align(a: &str, b: &str) -> PyResult<f32> {
     Ok(score)
 }
 
+// TODO: Is it possible to define this in the anchor module? The macro stuff seems to prevent that right now.
+/// anchor submodule
 #[pymodule]
-fn anchor(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn anchor(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<crate::anchor::PyContext>()?;
     Ok(())
 }
 
+/// Top-level spor module
 #[pymodule]
-/// A Python module implemented in Rust.
 fn spor(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(align))?;
-
     m.add_wrapped(wrap_pymodule!(anchor))?;
     Ok(())
 }

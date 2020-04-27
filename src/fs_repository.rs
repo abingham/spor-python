@@ -69,6 +69,8 @@ impl PyIterProtocol for PyFSRepository {
 
     // This is neutered since we're only implementing half of the procotol (i.e. the "iterable" portion) here. pyo3
     // doesn't seem to have protocols for iterable and iterator, just iterator, so we're cheating a bit.
+    // There's actually a trait default for this function, but it panics which seems less useful than raising
+    // an exception.
     fn __next__(_slf: PyRefMut<Self>) -> PyResult<Option<PyObject>> {
         Err(pyo3::exceptions::TypeError::py_err("PyFSRepository is not an iterator"))
     }

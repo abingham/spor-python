@@ -1,15 +1,14 @@
-
-use pyo3::prelude::*;
-use pyo3::PyIterProtocol;
-use pyo3::types::{PyString, PyTuple};
-use spor::repository::Repository;
 use crate::anchor::PyAnchor;
-use spor::repository::AnchorId;
+use pyo3::prelude::*;
+use pyo3::types::{PyString, PyTuple};
+use pyo3::PyIterProtocol;
 use spor::repository::fs_repository::FSRepository;
+use spor::repository::AnchorId;
+use spor::repository::Repository;
 
 #[pyclass(name=FSRepository, module="spor.repository.fs_repository")]
 pub struct PyFSRepository {
-    handle: FSRepository
+    handle: FSRepository,
 }
 
 #[pymethods]
@@ -18,19 +17,20 @@ impl PyFSRepository {
     fn new(path: &str) -> PyResult<Self> {
         let path = std::path::Path::new(path);
         FSRepository::new(path, None)
-            .map_err(|err| {
-                pyo3::exceptions::OSError::py_err(format!("{}", err))
-            })
-            .map(|repo| {
-                PyFSRepository { handle: repo }
-            })
+            .map_err(|err| pyo3::exceptions::OSError::py_err(format!("{}", err)))
+            .map(|repo| PyFSRepository { handle: repo })
     }
 
     #[getter]
     fn spor_dir(&self) -> PyResult<PyObject> {
-          let path = self.handle.spor_dir().to_str()
-             .ok_or(pyo3::exceptions::ValueError::py_err("Unable to convert path to string"))
-             .map(|s| s.to_owned())?;
+        let path = self
+            .handle
+            .spor_dir()
+            .to_str()
+            .ok_or(pyo3::exceptions::ValueError::py_err(
+                "Unable to convert path to string",
+            ))
+            .map(|s| s.to_owned())?;
 
         let gil = Python::acquire_gil();
         let py = gil.python();
@@ -60,9 +60,23 @@ impl PyFSRepository {
     }
 }
 
+#[pyproto]
+impl PyIterProtocol for PyFSRepository {
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<FSRepositoryIterator> {
+        let iter = FSRepositoryIterator { iter: slf.handle.iter() };
+        Ok(iter)
+    }
+
+    // This is neutered since we're only implementing half of the procotol (i.e. the "iterable" portion) here. pyo3
+    // doesn't seem to have protocols for iterable and iterator, just iterator, so we're cheating a bit.
+    fn __next__(_slf: PyRefMut<Self>) -> PyResult<Option<PyObject>> {
+        Err(pyo3::exceptions::TypeError::py_err("PyFSRepository is not an iterator"))
+    }
+}
+
 #[pyclass]
-struct FSRepositoryIterator {
-    iter: Box<dyn Iterator<Item = (String, spor::anchor::Anchor)> + Send>,
+pub struct FSRepositoryIterator {
+    iter: spor::repository::fs_repository::RepositoryIterator,
 }
 
 #[pyproto]
@@ -75,15 +89,14 @@ impl PyIterProtocol for FSRepositoryIterator {
         let gil = Python::acquire_gil();
         let py = gil.python();
 
-        let result = slf.iter.next()
-            .map(|(id, anchor)| {
-                let objects: Vec<PyObject> = vec![
-                    PyString::new(py, &id).to_object(py),
-                    PyAnchor { handle: anchor }.into_py(py)
-                 ];
+        let result = slf.iter.next().map(|(id, anchor)| {
+            let objects: Vec<PyObject> = vec![
+                PyString::new(py, &id).to_object(py),
+                PyAnchor { handle: anchor }.into_py(py),
+            ];
 
-                PyTuple::new(py, objects).to_object(py)
-            });
+            PyTuple::new(py, objects).to_object(py)
+        });
 
         Ok(result)
     }

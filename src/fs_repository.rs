@@ -58,6 +58,11 @@ impl PyFSRepository {
             .map_err(|err| pyo3::exceptions::RuntimeError::py_err(format!("{}", err)))
             .map(|opt| opt.map(|a| PyAnchor { handle: a }))
     }
+
+    fn items(slf: PyRefMut<Self>) -> PyResult<FSRepositoryIterator> {
+        let iter = FSRepositoryIterator { iter: slf.handle.iter() };
+        Ok(iter)
+    }
 }
 
 #[pyproto]

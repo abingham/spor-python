@@ -59,16 +59,16 @@ impl PyFSRepository {
             .map(|opt| opt.map(|a| PyAnchor { handle: a }))
     }
 
-    fn items(slf: PyRefMut<Self>) -> PyResult<FSRepositoryIterator> {
-        let iter = FSRepositoryIterator { iter: slf.handle.iter() };
+    fn items(slf: PyRefMut<Self>) -> PyResult<ItemIterator> {
+        let iter = ItemIterator { iter: slf.handle.iter() };
         Ok(iter)
     }
 }
 
 #[pyproto]
 impl PyIterProtocol for PyFSRepository {
-    fn __iter__(slf: PyRefMut<Self>) -> PyResult<FSRepositoryIterator> {
-        let iter = FSRepositoryIterator { iter: slf.handle.iter() };
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Iterator> {
+        let iter = Iterator { iter: slf.handle.iter() };
         Ok(iter)
     }
 
@@ -81,14 +81,39 @@ impl PyIterProtocol for PyFSRepository {
     }
 }
 
+/// Iterator over anchor-ids
 #[pyclass]
-pub struct FSRepositoryIterator {
+pub struct Iterator {
     iter: spor::repository::fs_repository::RepositoryIterator,
 }
 
 #[pyproto]
-impl PyIterProtocol for FSRepositoryIterator {
-    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Py<FSRepositoryIterator>> {
+impl PyIterProtocol for Iterator {
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Py<Iterator>> {
+        Ok(slf.into())
+    }
+
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<PyObject>> {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+
+        let result = slf.iter.next().map(|(id, _anchor)| {
+            PyString::new(py, &id).to_object(py)
+        });
+
+        Ok(result)
+    }
+}
+
+/// Iterator over (id, anchor) tuples suitable for e.g. the items() method.
+#[pyclass]
+pub struct ItemIterator {
+    iter: spor::repository::fs_repository::RepositoryIterator,
+}
+
+#[pyproto]
+impl PyIterProtocol for ItemIterator {
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Py<ItemIterator>> {
         Ok(slf.into())
     }
 

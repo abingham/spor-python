@@ -58,6 +58,7 @@ pub struct PyAnchor {
 impl PyAnchor {
     #[new]
     fn new(
+        // TODO: This should be able to accept a pathlib.Path object or string.
         file_path: String,
         context: &PyContext,
         metadata: PyObject,

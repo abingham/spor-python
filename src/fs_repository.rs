@@ -60,7 +60,9 @@ impl PyFSRepository {
     }
 
     fn items(slf: PyRefMut<Self>) -> PyResult<ItemIterator> {
-        let iter = ItemIterator { iter: slf.handle.iter() };
+        let iter = ItemIterator {
+            iter: slf.handle.iter(),
+        };
         Ok(iter)
     }
 }
@@ -68,16 +70,22 @@ impl PyFSRepository {
 #[pyproto]
 impl PyIterProtocol for PyFSRepository {
     fn __iter__(slf: PyRefMut<Self>) -> PyResult<Iterator> {
-        let iter = Iterator { iter: slf.handle.iter() };
+        let iter = Iterator {
+            iter: slf.handle.iter(),
+        };
         Ok(iter)
     }
 
+    // TODO: Remove this! It's not necessary.
+    //
     // This is neutered since we're only implementing half of the procotol (i.e. the "iterable" portion) here. pyo3
     // doesn't seem to have protocols for iterable and iterator, just iterator, so we're cheating a bit.
     // There's actually a trait default for this function, but it panics which seems less useful than raising
     // an exception.
     fn __next__(_slf: PyRefMut<Self>) -> PyResult<Option<PyObject>> {
-        Err(pyo3::exceptions::TypeError::py_err("PyFSRepository is not an iterator"))
+        Err(pyo3::exceptions::TypeError::py_err(
+            "PyFSRepository is not an iterator",
+        ))
     }
 }
 
@@ -97,9 +105,10 @@ impl PyIterProtocol for Iterator {
         let gil = Python::acquire_gil();
         let py = gil.python();
 
-        let result = slf.iter.next().map(|(id, _anchor)| {
-            PyString::new(py, &id).to_object(py)
-        });
+        let result = slf
+            .iter
+            .next()
+            .map(|(id, _anchor)| PyString::new(py, &id).to_object(py));
 
         Ok(result)
     }
@@ -134,12 +143,3 @@ impl PyIterProtocol for ItemIterator {
     }
 }
 
-// TODO: initialize()
-
-// pub fn init_module(py: Python) -> PyResult<PyModule> {
-//     let m = PyModule::new(py, "fs_repository")?;
-//     m.add(py, "__doc__", "Filesystem-based repository")?;
-//     m.add_class::<FSRepository>(py)?;
-//     // initialize
-//     Ok(m)
-// }

@@ -125,3 +125,11 @@ impl PyAnchor {
             .map(|result| result.to_object(py))
     }
 }
+
+/// anchor submodule
+#[pymodule]
+pub fn anchor(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<crate::anchor::PyContext>()?;
+    m.add_class::<crate::anchor::PyAnchor>()?;
+    Ok(())
+}

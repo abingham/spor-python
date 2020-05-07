@@ -1,12 +1,13 @@
 use crate::anchor::PyAnchor;
 use pyo3::prelude::*;
 use pyo3::types::{PyString, PyTuple};
+use pyo3::wrap_pyfunction;
 use pyo3::PyIterProtocol;
 use spor::repository::fs_repository::FSRepository;
 use spor::repository::AnchorId;
 use spor::repository::Repository;
 
-#[pyclass(name=FSRepository, module="spor.repository.fs_repository")]
+#[pyclass(name=FSRepository, module="spor.fs_repository")]
 pub struct PyFSRepository {
     handle: FSRepository,
 }
@@ -143,3 +144,18 @@ impl PyIterProtocol for ItemIterator {
     }
 }
 
+#[pyfunction]
+pub fn initialize(path: &str) -> PyResult<()> {
+    let path = std::path::Path::new(path);
+    let future = spor::repository::fs_repository::initialize(path, None);
+    futures::executor::block_on(future)
+        .map_err(|err| pyo3::exceptions::OSError::py_err(format!("{}", err)))
+}
+
+/// Filesystem-based repository
+#[pymodule]
+pub fn fs_repository(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<crate::fs_repository::PyFSRepository>()?;
+    m.add_wrapped(wrap_pyfunction!(initialize))?;
+    Ok(())
+}

@@ -6,6 +6,8 @@ use spor::alignment::smith_waterman::{SimpleScorer, SmithWaterman};
 pub mod anchor;
 mod fs_repository;
 
+use crate::fs_repository::PyInit_fs_repository;
+
 #[pyfunction]
 fn align(a: &str, b: &str) -> PyResult<f32> {
     let scorer = SimpleScorer::default();
@@ -20,23 +22,6 @@ fn align(a: &str, b: &str) -> PyResult<f32> {
 pub fn anchor(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<crate::anchor::PyContext>()?;
     m.add_class::<crate::anchor::PyAnchor>()?;
-    Ok(())
-}
-
-// TODO: Can this go in fs_repository?
-#[pyfunction]
-pub fn initialize(path: &str) -> PyResult<()> {
-    let path = std::path::Path::new(path);
-    let future = spor::repository::fs_repository::initialize(path, None);
-    futures::executor::block_on(future)
-        .map_err(|err| pyo3::exceptions::OSError::py_err(format!("{}", err)))
-}
-
-/// Filesystem-based repository
-#[pymodule]
-pub fn fs_repository(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<crate::fs_repository::PyFSRepository>()?;
-    m.add_wrapped(wrap_pyfunction!(initialize))?;
     Ok(())
 }
 

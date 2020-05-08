@@ -7,19 +7,19 @@ use spor::repository::fs_repository::FSRepository;
 use spor::repository::AnchorId;
 use spor::repository::Repository;
 
-#[pyclass(name=FSRepository, module="spor.fs_repository")]
-pub struct PyFSRepository {
+#[pyclass(name=FSRepository, module="spor.repository")]
+pub struct PyRepository {
     handle: FSRepository,
 }
 
 #[pymethods]
-impl PyFSRepository {
+impl PyRepository {
     #[new]
     fn new(path: &str) -> PyResult<Self> {
         let path = std::path::Path::new(path);
         FSRepository::new(path, None)
             .map_err(|err| pyo3::exceptions::OSError::py_err(format!("{}", err)))
-            .map(|repo| PyFSRepository { handle: repo })
+            .map(|repo| PyRepository { handle: repo })
     }
 
     #[getter]
@@ -69,7 +69,7 @@ impl PyFSRepository {
 }
 
 #[pyproto]
-impl PyIterProtocol for PyFSRepository {
+impl PyIterProtocol for PyRepository {
     fn __iter__(slf: PyRefMut<Self>) -> PyResult<Iterator> {
         let iter = Iterator {
             iter: slf.handle.iter(),
@@ -85,7 +85,7 @@ impl PyIterProtocol for PyFSRepository {
     // an exception.
     fn __next__(_slf: PyRefMut<Self>) -> PyResult<Option<PyObject>> {
         Err(pyo3::exceptions::TypeError::py_err(
-            "PyFSRepository is not an iterator",
+            "PyRepository is not an iterator",
         ))
     }
 }
@@ -154,8 +154,8 @@ pub fn initialize(path: &str) -> PyResult<()> {
 
 /// Filesystem-based repository
 #[pymodule]
-pub fn fs_repository(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<crate::fs_repository::PyFSRepository>()?;
+pub fn repository(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<crate::fs_repository::PyRepository>()?;
     m.add_wrapped(wrap_pyfunction!(initialize))?;
     Ok(())
 }

@@ -1,6 +1,6 @@
 # This is our initial goal for spor-python.
 #
-from spor.fs_repository import open_repository
+from spor import open_repository
 import pytest
 
 

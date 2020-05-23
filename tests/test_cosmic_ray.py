@@ -1,4 +1,4 @@
-from spor.fs_repository import open_repository
+from spor import open_repository
 
 
 def test_cosmic_ray_filtering(repo_path):

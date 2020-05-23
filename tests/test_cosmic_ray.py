@@ -14,4 +14,3 @@ def test_cosmic_ray_filtering(repo_path):
         assert isinstance(metadata["mutate"], bool)
 
     assert len(list(repo.items())) == 2
-

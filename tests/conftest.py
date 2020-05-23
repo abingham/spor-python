@@ -1,12 +1,11 @@
 import pytest
 
-from spor.anchor import Anchor, Context
-from spor.fs_repository import initialize, open_repository
+from spor import Anchor, Context, initialize_repository, open_repository
 
 
 @pytest.fixture
 def repo_path(tmp_path):
-    initialize(tmp_path)
+    initialize_repository(tmp_path)
 
     repo = open_repository(tmp_path)
 

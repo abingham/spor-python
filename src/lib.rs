@@ -4,10 +4,10 @@ use spor::alignment::align::Aligner;
 use spor::alignment::smith_waterman::{SimpleScorer, SmithWaterman};
 
 pub mod anchor;
-// mod repository;
+mod repository;
 
 use crate::anchor::PyInit_anchor;
-// use crate::repository::PyInit_repository;
+use crate::repository::PyInit_repository;
 
 #[pyfunction]
 fn align(a: &str, b: &str) -> PyResult<f32> {
@@ -22,6 +22,6 @@ fn align(a: &str, b: &str) -> PyResult<f32> {
 fn spor(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(align))?;
     m.add_wrapped(wrap_pymodule!(anchor))?;
-    // m.add_wrapped(wrap_pymodule!(repository))?;
+    m.add_wrapped(wrap_pymodule!(repository))?;
     Ok(())
 }

@@ -3,6 +3,10 @@ name = "spor-python"
 version = "2.0.1"
 authors = ["Austin Bingham <austin.bingham@gmail.com>"]
 edition = "2018"
+readme = "README.md"
+description = "Python bindings for spor"
+repository = "https://github.com/abingham/spor-python/"
+license = "MIT"
 
 [lib]
 name = "spor"
@@ -25,4 +29,3 @@ maintainer = "Austin Bingham"
 maintainer-email = "austin.bingham@gmail.com"
 project-url = ["https://github.com/abingham/spor-python"]
 requires-dist = ["pyyaml"]
-readme = "README.rst"

@@ -12,8 +12,14 @@ pub struct PyContext {
 #[pymethods]
 impl PyContext {
     #[new]
-    fn new(text: &str, offset: usize, width: usize, context_width: usize) -> PyResult<Self> {
-        spor::anchor::Context::new(text, offset, width, context_width)
+    fn new(before: &str, offset: usize, topic: &str, after: &str, width: usize) -> PyResult<Self> {
+        Ok(PyContext {
+            handle: spor::anchor::Context::new(before, offset, topic, after, width),
+        })
+    }
+    #[staticmethod]
+    fn from_text(text: &str, offset: usize, width: usize, context_width: usize) -> PyResult<Self> {
+        spor::anchor::Context::from_text(text, offset, width, context_width)
             .or_else(|err| Err(pyo3::exceptions::ValueError::py_err(format!("{}", err))))
             .map(|context| PyContext { handle: context })
     }

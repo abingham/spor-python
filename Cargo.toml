@@ -24,3 +24,4 @@ classifier = ["Programming Language :: Python"]
 maintainer = "Austin Bingham"
 maintainer-email = "austin.bingham@gmail.com"
 project-url = ["https://github.com/abingham/spor-python"]
+requires-dist = ["pyyaml"]
